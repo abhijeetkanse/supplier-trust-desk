@@ -1,0 +1,93 @@
+_schema-version: 3.3.0
+ID: supplier-mdcr
+version: 0.1.0
+description: "Supplier master-data change requests with four-eyes approval (SAP CAP, P4)"
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: supplier-mdcr-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: supplier-mdcr-auth
+      - name: supplier-mdcr-db
+
+  - name: supplier-mdcr-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: supplier-mdcr-db
+  - name: supplier-mdcr
+    type: approuter.nodejs
+    path: .deploy/app-router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: supplier-mdcr-auth
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+
+resources:
+  - name: supplier-mdcr-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: supplier-mdcr-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**
+        role-collections:
+          - name: 'Requester (supplier-mdcr ${org}-${space})'
+            description: 'generated'
+            role-template-references:
+              - '$XSAPPNAME.Requester'
+          - name: 'DataSteward (supplier-mdcr ${org}-${space})'
+            description: 'generated'
+            role-template-references:
+              - '$XSAPPNAME.DataSteward'
+          - name: 'Auditor (supplier-mdcr ${org}-${space})'
+            description: 'generated'
+            role-template-references:
+              - '$XSAPPNAME.Auditor'
+    requires:
+      - name: app-api
+  - name: supplier-mdcr-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared

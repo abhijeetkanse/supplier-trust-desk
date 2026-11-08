@@ -1,0 +1,43 @@
+{
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Requester",
+      "description": "Requester"
+    },
+    {
+      "name": "$XSAPPNAME.DataSteward",
+      "description": "DataSteward"
+    },
+    {
+      "name": "$XSAPPNAME.Auditor",
+      "description": "Auditor"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "Requester",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Requester"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "DataSteward",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.DataSteward"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Auditor",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Auditor"
+      ],
+      "attribute-references": []
+    }
+  ]
+}
