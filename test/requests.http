@@ -1,0 +1,56 @@
+### Manual checks (VS Code / BAS "REST Client"). Start the app first: cds watch
+### Users (mocked, local only): rita/raj = Requester, sam = DataSteward, aud = Auditor, mixa = both roles
+
+@host = http://localhost:4004/odata/v4/mdcr
+@nordlicht = 11111111-0000-4000-8000-000000000001
+@nordlichtAddr = 22222222-0000-4000-8000-000000000001
+
+### 1. Read suppliers (as auditor)
+GET {{host}}/Suppliers?$expand=addresses
+Authorization: Basic aud:aud
+
+### 2. Create a change request as a draft (as rita) -> copy the ID from the response
+POST {{host}}/ChangeRequests
+Authorization: Basic rita:rita
+Content-Type: application/json
+
+{ "supplier_ID": "{{nordlicht}}", "address_ID": "{{nordlichtAddr}}",
+  "reason": "Postal code has only 4 digits",
+  "items": [ { "field": "postalCode", "newValue": "69190" } ] }
+
+### 3. Save it (draft activation) — paste the ID
+@id = PASTE-ID-HERE
+POST {{host}}/ChangeRequests(ID={{id}},IsActiveEntity=false)/MasterDataService.draftActivate
+Authorization: Basic rita:rita
+Content-Type: application/json
+
+{}
+
+### 4. Submit (as rita) — run it twice: the second time must give 409
+POST {{host}}/ChangeRequests(ID={{id}},IsActiveEntity=true)/MasterDataService.submit
+Authorization: Basic rita:rita
+Content-Type: application/json
+
+{}
+
+### 5. Try to approve as the requester -> 403 (wrong role)
+POST {{host}}/ChangeRequests(ID={{id}},IsActiveEntity=true)/MasterDataService.approve
+Authorization: Basic rita:rita
+Content-Type: application/json
+
+{}
+
+### 6. Approve as the data steward -> 200, then check the address in request 1
+POST {{host}}/ChangeRequests(ID={{id}},IsActiveEntity=true)/MasterDataService.approve
+Authorization: Basic sam:sam
+Content-Type: application/json
+
+{ "note": "Checked against the invoice letterhead" }
+
+### 7. Invalid postal code for DE -> 400 (create draft, then activate it)
+POST {{host}}/ChangeRequests
+Authorization: Basic rita:rita
+Content-Type: application/json
+
+{ "supplier_ID": "{{nordlicht}}", "address_ID": "{{nordlichtAddr}}",
+  "reason": "Wrong fix", "items": [ { "field": "postalCode", "newValue": "6919X" } ] }

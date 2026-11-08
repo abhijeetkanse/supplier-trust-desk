@@ -1,0 +1,73 @@
+{
+  "name": "supplier-mdcr",
+  "version": "0.1.0",
+  "description": "Supplier master-data change requests with four-eyes approval (SAP CAP, P4)",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^10",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/cds-test": "^1",
+    "@cap-js/sqlite": "^3",
+    "@sap/cds-dk": "^10"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "test": "node --test test/*.test.js"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": ":memory:"
+        }
+      },
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "rita": {
+            "password": "rita",
+            "roles": [
+              "Requester"
+            ]
+          },
+          "raj": {
+            "password": "raj",
+            "roles": [
+              "Requester"
+            ]
+          },
+          "sam": {
+            "password": "sam",
+            "roles": [
+              "DataSteward"
+            ]
+          },
+          "mixa": {
+            "password": "mixa",
+            "roles": [
+              "Requester",
+              "DataSteward"
+            ]
+          },
+          "aud": {
+            "password": "aud",
+            "roles": [
+              "Auditor"
+            ]
+          },
+          "nobody": {
+            "password": "nobody",
+            "roles": []
+          }
+        }
+      }
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,5 @@
+code;name;descr
+N;New;Saved, not yet submitted
+S;Submitted;Waiting for a data steward
+A;Approved;Approved and applied to the supplier
+R;Rejected;Rejected with a reason
