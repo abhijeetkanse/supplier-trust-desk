@@ -1,33 +1,41 @@
 {
   "scopes": [
     {
-      "name": "$XSAPPNAME.Requester",
-      "description": "Requester"
-    },
-    {
       "name": "$XSAPPNAME.DataSteward",
       "description": "DataSteward"
     },
     {
+      "name": "$XSAPPNAME.RuleAdmin",
+      "description": "RuleAdmin"
+    },
+    {
       "name": "$XSAPPNAME.Auditor",
       "description": "Auditor"
+    },
+    {
+      "name": "$XSAPPNAME.Integration",
+      "description": "Integration"
+    },
+    {
+      "name": "$XSAPPNAME.Requester",
+      "description": "Requester"
     }
   ],
   "attributes": [],
   "role-templates": [
     {
-      "name": "Requester",
-      "description": "generated",
-      "scope-references": [
-        "$XSAPPNAME.Requester"
-      ],
-      "attribute-references": []
-    },
-    {
       "name": "DataSteward",
       "description": "generated",
       "scope-references": [
         "$XSAPPNAME.DataSteward"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "RuleAdmin",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.RuleAdmin"
       ],
       "attribute-references": []
     },
@@ -38,6 +46,25 @@
         "$XSAPPNAME.Auditor"
       ],
       "attribute-references": []
+    },
+    {
+      "name": "Integration",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Integration"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Requester",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Requester"
+      ],
+      "attribute-references": []
     }
+  ],
+  "authorities": [
+    "$XSAPPNAME.Integration"
   ]
 }

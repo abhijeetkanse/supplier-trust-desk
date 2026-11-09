@@ -1,0 +1,8 @@
+field;tier;note
+street;L;Spelling or format correction of the street line
+houseNumber;L;Format correction of the house number
+postalCode;L;Format correction; rule R1 checks the format per country
+city;M;A different city means a different place: steward approval
+country;M;Changes legal location and tax rules: steward approval
+name;M;Changes the supplier's identity: steward approval
+taxNumber;M;Tax identity: steward approval

@@ -17,7 +17,8 @@
   "scripts": {
     "start": "cds-serve",
     "watch": "cds watch",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build:ui": "node scripts/copy-ui.js"
   },
   "cds": {
     "requires": {
@@ -64,6 +65,24 @@
           "nobody": {
             "password": "nobody",
             "roles": []
+          },
+          "p2app": {
+            "password": "p2app",
+            "roles": [
+              "Integration"
+            ]
+          },
+          "p3app": {
+            "password": "p3app",
+            "roles": [
+              "Integration"
+            ]
+          },
+          "ops": {
+            "password": "ops",
+            "roles": [
+              "RuleAdmin"
+            ]
           }
         }
       },
@@ -74,11 +93,11 @@
         "db": {
           "kind": "hana"
         },
-        "fiori": { 
-          "preview": true 
-        }, 
-        "server": { 
-          "index": true 
+        "fiori": {
+          "preview": true
+        },
+        "server": {
+          "index": true
         }
       }
     }

@@ -1,0 +1,140 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "supplier.directory",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "i18n": "i18n/i18n.properties",
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/suppliers/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.136.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "supplier.directory.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "name": "SuppliersList",
+          "pattern": ":?query:",
+          "target": "SuppliersList"
+        },
+        {
+          "name": "SuppliersObjectPage",
+          "pattern": "Suppliers({key}):?query:",
+          "target": "SuppliersObjectPage"
+        },
+        {
+          "name": "ChangeObjectPage",
+          "pattern": "Suppliers({key})/requests({key2}):?query:",
+          "target": "ChangeObjectPage"
+        }
+      ],
+      "targets": {
+        "SuppliersList": {
+          "type": "Component",
+          "id": "SuppliersList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/Suppliers",
+              "variantManagement": "Page",
+              "initialLoad": "Enabled",
+              "navigation": {
+                "Suppliers": {
+                  "detail": {
+                    "route": "SuppliersObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "enableExport": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SuppliersObjectPage": {
+          "type": "Component",
+          "id": "SuppliersObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Suppliers",
+              "editableHeaderContent": false,
+              "navigation": {
+                "requests": {
+                  "detail": {
+                    "route": "ChangeObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ChangeObjectPage": {
+          "type": "Component",
+          "id": "ChangeObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Suppliers/requests",
+              "editableHeaderContent": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

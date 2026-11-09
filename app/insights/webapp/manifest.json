@@ -1,0 +1,162 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "supplier.insights",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "i18n": "i18n/i18n.properties",
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/insights/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.136.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {},
+        "sap.ushell": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "supplier.insights.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "name": "RequestFactsList",
+          "pattern": ":?query:",
+          "target": "RequestFactsList"
+        },
+        {
+          "name": "RequestFactsObjectPage",
+          "pattern": "RequestFacts({key}):?query:",
+          "target": "RequestFactsObjectPage"
+        }
+      ],
+      "targets": {
+        "RequestFactsList": {
+          "type": "Component",
+          "id": "RequestFactsList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/RequestFacts",
+              "variantManagement": "Page",
+              "initialLoad": "Enabled",
+              "navigation": {
+                "RequestFacts": {
+                  "detail": {
+                    "route": "RequestFactsObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "AnalyticalTable",
+                    "enableExport": true
+                  }
+                },
+                "@com.sap.vocabularies.UI.v1.SelectionFields": {
+                  "layout": "CompactVisual",
+                  "initialLayout": "Visual",
+                  "filterFields": {
+                    "status": {
+                      "label": "Status",
+                      "availability": "Default",
+                      "visualFilter": {
+                        "valueList": "com.sap.vocabularies.Common.v1.ValueList#vlStatus"
+                      }
+                    },
+                    "riskTier": {
+                      "label": "Risk tier",
+                      "availability": "Default",
+                      "visualFilter": {
+                        "valueList": "com.sap.vocabularies.Common.v1.ValueList#vlRisk"
+                      }
+                    },
+                    "approvalMode": {
+                      "label": "Approval path",
+                      "availability": "Default",
+                      "visualFilter": {
+                        "valueList": "com.sap.vocabularies.Common.v1.ValueList#vlMode"
+                      }
+                    }
+                  }
+                }
+              },
+              "views": {
+                "paths": [
+                  {
+                    "primary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                      }
+                    ],
+                    "secondary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                      }
+                    ],
+                    "defaultPath": "both"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "RequestFactsObjectPage": {
+          "type": "Component",
+          "id": "RequestFactsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/RequestFacts",
+              "editableHeaderContent": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

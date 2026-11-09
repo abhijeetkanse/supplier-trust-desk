@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplier Trust Desk</title>
+  <style>
+    :root { color-scheme: light; --page: #f5f6f7; --card: #ffffff; --ink: #1d2d3e; --ink-2: #556b82; --line: #d9d9d9; --accent: #0070f2; }
+    @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --page: #12171c; --card: #1d232a; --ink: #eaecee; --ink-2: #a9b4be; --line: #39424d; --accent: #4db1ff; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "72", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--page); color: var(--ink); }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem 1.25rem; background: var(--card); border-bottom: 1px solid var(--line); }
+    header h1 { font-size: 1rem; margin: 0; font-weight: 700; }
+    header .who { font-size: .85rem; color: var(--ink-2); }
+    header a { color: var(--accent); margin-left: .75rem; }
+    main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    h2 { font-size: .95rem; font-weight: 700; margin: 1.5rem 0 .75rem; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1rem; }
+    a.tile { display: flex; flex-direction: column; justify-content: space-between; min-height: 11rem; padding: 1rem; background: var(--card);
+             border: 1px solid var(--line); border-radius: 1rem; color: inherit; text-decoration: none; }
+    a.tile:hover, a.tile:focus-visible { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent) inset; }
+    .tile b { font-size: 1rem; line-height: 1.3; }
+    .tile span { font-size: .8rem; color: var(--ink-2); line-height: 1.35; }
+    .tile .role { font-size: .75rem; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: .5rem; }
+    .note { font-size: .85rem; color: var(--ink-2); max-width: 48rem; line-height: 1.5; }
+    .error { padding: 1rem; border: 1px solid #aa0808; border-radius: .5rem; background: var(--card); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Supplier Trust Desk</h1>
+    <div class="who" id="who" aria-live="polite">Checking your access…</div>
+  </header>
+  <main>
+    <h2 id="title">Your apps</h2>
+    <div class="tiles" id="tiles" aria-labelledby="title"></div>
+    <p class="note" id="note"></p>
+  </main>
+  <script>
+    // Tiles per role. The server decides access on every call (403); this page only hides
+    // tiles a user cannot use. Roles come from the login token via /odata/v4/user/whoAmI().
+    const APPS = [
+      { href: 'requests/webapp/index.html',  title: 'My Supplier Change Requests', text: 'Ask for a supplier data change and follow it until it is applied.', roles: ['Requester'] },
+      { href: 'approvals/webapp/index.html', title: 'Approve Supplier Changes',    text: 'Decide submitted medium- and high-risk changes made by others.',  roles: ['DataSteward'] },
+      { href: 'suppliers/webapp/index.html', title: 'Supplier Master Data',        text: 'Suppliers, addresses and every change, read-only.',               roles: ['Requester', 'DataSteward', 'Auditor', 'RuleAdmin'] },
+      { href: 'insights/webapp/index.html',  title: 'Supplier Change Insights',    text: 'Dashboard: requests by supplier, status, risk and approval path.', roles: ['DataSteward', 'Auditor'] },
+      { href: 'report/index.html',           title: 'Change Report for Meetings',  text: 'Period summary with charts; print or save as PDF.',                roles: ['DataSteward', 'Auditor'] },
+      { href: 'rules/webapp/index.html',     title: 'Rules and Settings',          text: 'Postal-code rules, risk tiers, settings and thresholds.',         roles: ['RuleAdmin'] }
+    ]
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+    fetch('odata/v4/user/whoAmI()', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() })
+      .then(me => {
+        const roles = me.roles || []
+        document.getElementById('who').innerHTML = `Signed in as <b>${esc(me.id)}</b> · ${roles.length ? esc(roles.join(', ')) : 'no role'}<a href="logout">Sign out</a>`
+        const mine = APPS.filter(a => a.roles.some(r => roles.includes(r)))
+        document.getElementById('tiles').innerHTML = mine.map(a =>
+          `<a class="tile" href="${a.href}"><b>${esc(a.title)}</b><span>${esc(a.text)}</span><span class="role">For: ${esc(a.roles.filter(r => roles.includes(r)).join(', '))}</span></a>`).join('')
+        document.getElementById('note').textContent = mine.length ? '' :
+          'You are signed in but have no role for this application yet. Ask the BTP administrator to assign you a role collection (BTP cockpit → Security → Role Collections).'
+      })
+      .catch(e => {
+        document.getElementById('who').textContent = 'Not available'
+        document.getElementById('tiles').innerHTML = `<div class="error" role="alert">Could not load your access (${esc(e.message)}). Reload the page; if it stays, the service may be stopped (trial apps stop daily).</div>`
+      })
+  </script>
+</body>
+</html>

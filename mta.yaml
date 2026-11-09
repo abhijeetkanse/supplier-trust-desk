@@ -10,6 +10,7 @@ build-parameters:
       commands:
         - npm ci
         - npx cds build --production
+        - node scripts/copy-ui.js
 modules:
   - name: supplier-mdcr-srv
     type: nodejs
@@ -84,6 +85,10 @@ resources:
             description: 'generated'
             role-template-references:
               - '$XSAPPNAME.Auditor'
+          - name: 'RuleAdmin (supplier-mdcr ${org}-${space})'
+            description: 'Maintains postal-code rules, risk tiers, settings and thresholds'
+            role-template-references:
+              - '$XSAPPNAME.RuleAdmin'
     requires:
       - name: app-api
   - name: supplier-mdcr-db

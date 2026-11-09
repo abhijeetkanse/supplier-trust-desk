@@ -1,10 +1,15 @@
 {
+  "welcomeFile": "/index.html",
+  "logout": { "logoutEndpoint": "/logout", "logoutPage": "/logged-out.html" },
   "routes": [
-    {
-      "source": "^/(.*)$",
-      "target": "$1",
-      "destination": "srv-api",
-      "csrfProtection": true
-    }
+    { "source": "^/odata/(.*)$", "destination": "srv-api", "csrfProtection": true, "authenticationType": "xsuaa" },
+    { "source": "^/requests/", "localDir": "resources", "authenticationType": "xsuaa", "scope": "$XSAPPNAME.Requester" },
+    { "source": "^/approvals/", "localDir": "resources", "authenticationType": "xsuaa", "scope": "$XSAPPNAME.DataSteward" },
+    { "source": "^/(insights|report)/", "localDir": "resources", "authenticationType": "xsuaa", "scope": ["$XSAPPNAME.DataSteward", "$XSAPPNAME.Auditor"] },
+    { "source": "^/rules/", "localDir": "resources", "authenticationType": "xsuaa", "scope": "$XSAPPNAME.RuleAdmin" },
+    { "source": "^/suppliers/", "localDir": "resources", "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.Requester", "$XSAPPNAME.DataSteward", "$XSAPPNAME.Auditor", "$XSAPPNAME.RuleAdmin"] },
+    { "source": "^/logged-out\\.html$", "localDir": "resources", "authenticationType": "none" },
+    { "source": "^/(.*)$", "localDir": "resources", "authenticationType": "xsuaa" }
   ]
 }

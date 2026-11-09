@@ -1,0 +1,223 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "supplier.rules",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "i18n": "i18n/i18n.properties",
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/config/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.136.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "supplier.rules.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "name": "RulesList",
+          "pattern": ":?query:",
+          "target": "RulesList"
+        },
+        {
+          "name": "PostalCodeRulesObjectPage",
+          "pattern": "PostalCodeRules({key}):?query:",
+          "target": "PostalCodeRulesObjectPage"
+        },
+        {
+          "name": "RiskRulesObjectPage",
+          "pattern": "RiskRules({key}):?query:",
+          "target": "RiskRulesObjectPage"
+        },
+        {
+          "name": "SettingsObjectPage",
+          "pattern": "Settings({key}):?query:",
+          "target": "SettingsObjectPage"
+        },
+        {
+          "name": "ThresholdsObjectPage",
+          "pattern": "Thresholds({key}):?query:",
+          "target": "ThresholdsObjectPage"
+        },
+        {
+          "name": "HoldListObjectPage",
+          "pattern": "HoldList({key}):?query:",
+          "target": "HoldListObjectPage"
+        }
+      ],
+      "targets": {
+        "RulesList": {
+          "type": "Component",
+          "id": "RulesList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/PostalCodeRules",
+              "variantManagement": "Page",
+              "initialLoad": "Enabled",
+              "navigation": {
+                "PostalCodeRules": {
+                  "detail": {
+                    "route": "PostalCodeRulesObjectPage"
+                  }
+                },
+                "RiskRules": {
+                  "detail": {
+                    "route": "RiskRulesObjectPage"
+                  }
+                },
+                "Settings": {
+                  "detail": {
+                    "route": "SettingsObjectPage"
+                  }
+                },
+                "Thresholds": {
+                  "detail": {
+                    "route": "ThresholdsObjectPage"
+                  }
+                },
+                "HoldList": {
+                  "detail": {
+                    "route": "HoldListObjectPage"
+                  }
+                }
+              },
+              "views": {
+                "paths": [
+                  {
+                    "key": "postal",
+                    "entitySet": "PostalCodeRules",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#postal"
+                  },
+                  {
+                    "key": "risk",
+                    "entitySet": "RiskRules",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#risk"
+                  },
+                  {
+                    "key": "settings",
+                    "entitySet": "Settings",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#settings"
+                  },
+                  {
+                    "key": "thresholds",
+                    "entitySet": "Thresholds",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#thresholds"
+                  },
+                  {
+                    "key": "holds",
+                    "entitySet": "HoldList",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#holds"
+                  }
+                ],
+                "showCounts": false
+              }
+            }
+          }
+        },
+        "PostalCodeRulesObjectPage": {
+          "type": "Component",
+          "id": "PostalCodeRulesObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/PostalCodeRules",
+              "editableHeaderContent": false
+            }
+          }
+        },
+        "RiskRulesObjectPage": {
+          "type": "Component",
+          "id": "RiskRulesObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/RiskRules",
+              "editableHeaderContent": false
+            }
+          }
+        },
+        "SettingsObjectPage": {
+          "type": "Component",
+          "id": "SettingsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Settings",
+              "editableHeaderContent": false
+            }
+          }
+        },
+        "ThresholdsObjectPage": {
+          "type": "Component",
+          "id": "ThresholdsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Thresholds",
+              "editableHeaderContent": false
+            }
+          }
+        },
+        "HoldListObjectPage": {
+          "type": "Component",
+          "id": "HoldListObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/HoldList",
+              "editableHeaderContent": false
+            }
+          }
+        }
+      }
+    }
+  }
+}
