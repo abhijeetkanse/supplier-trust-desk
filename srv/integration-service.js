@@ -9,6 +9,11 @@ module.exports = class IntegrationService extends cds.ApplicationService {
 
     // ---- P2: InvoiceDecisions ------------------------------------------------
     this.before(['CREATE', 'UPDATE'], InvoiceDecisions, async req => {
+      if (req.event === 'CREATE') {
+        const { source, SupplierInvoice, FiscalYear } = req.data
+        if (await SELECT.one.from(InvoiceDecisions).columns('source').where({ source, SupplierInvoice, FiscalYear }))
+          return req.reject(409, 'A decision for this invoice already exists. Change it with PUT or PATCH.')
+      }
       const merged = { ...(await existing(req)), ...req.data }
       if (merged.decision === 'Escalate' && !merged.note?.trim())
         return req.reject(400, 'An escalation needs a note.', 'note')

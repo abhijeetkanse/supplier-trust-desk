@@ -69,6 +69,19 @@ describe('P4 integration API for P2 and P3', () => {
     assert.equal(res.status, 400)
   })
 
+  it('I13 PUT saves or replaces a decision in one call; a second POST for the same invoice is 409', async () => {
+    const key = `${API}/InvoiceDecisions(source='S4',SupplierInvoice='5105600200',FiscalYear='2026')`
+    const first = await axios.put(key, { decision: 'KeepBlocked', rootCause: 'Duplicate', decidedBy: 'Rita (AP clerk)' }, as('p2app'))
+    assert.equal(first.status, 201, JSON.stringify(first.data))
+    const second = await axios.put(key, { decision: 'Release', decidedBy: 'Carla (AP manager)' }, as('p2app'))
+    assert.equal(second.status, 200, JSON.stringify(second.data))
+    const post = await axios.post(`${API}/InvoiceDecisions`,
+      { source: 'S4', SupplierInvoice: '5105600200', FiscalYear: '2026', decision: 'Release', decidedBy: 'x' }, as('p2app'))
+    assert.equal(post.status, 409)
+    const back = await axios.get(key, as('p2app'))
+    assert.equal(back.data.decision, 'Release')
+  })
+
   let issueID
   it('I08 P3 imports findings: new ones are created, repeats merge, bad rows are reported', async () => {
     const findings = [

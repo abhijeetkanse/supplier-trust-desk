@@ -92,12 +92,6 @@
         },
         "db": {
           "kind": "hana"
-        },
-        "fiori": {
-          "preview": true
-        },
-        "server": {
-          "index": true
         }
       }
     }

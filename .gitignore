@@ -6,4 +6,5 @@ default-env.json
 .env
 *.sqlite
 .cdsrc-private.json
-.DS_Store.deploy/app-router/resources/
+.DS_Store
+.deploy/app-router/resources/
