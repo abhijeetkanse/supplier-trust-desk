@@ -1,3 +1,3 @@
 name;value;description
-lowRiskMaxFields;2;A low-risk request may change at most this many fields; more counts as a relocation (medium)
+lowRiskMaxFields;2;A low-risk request may change at most this many fields (more counts as a relocation: medium)
 lowRiskMaxPer30Days;2;After this many applied changes to one supplier in 30 days, further low-risk requests need a steward (medium)
