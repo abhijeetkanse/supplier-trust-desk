@@ -11,9 +11,9 @@ service RequestService @(requires: 'Requester') {
     *,
     // UI helpers, computed by the database on every read (never stored, never sent by the client)
     case when status.code = 'N' then true else false end                         as canSubmit         : Boolean,
-    case status.code when 'A' then 3 when 'R' then 1 when 'S' then 2 else 0 end  as statusCriticality : Integer,
-    case riskTier when 'L' then 3 when 'M' then 2 when 'H' then 1 else 0 end     as riskCriticality   : Integer,
-    case riskTier when 'L' then 'Low' when 'M' then 'Medium' when 'H' then 'High' end as riskTierText : String(10)
+    case when status.code = 'A' then 3 when status.code = 'R' then 1 when status.code = 'S' then 2 else 0 end  as statusCriticality : Integer,
+    case when riskTier = 'L' then 3 when riskTier = 'M' then 2 when riskTier = 'H' then 1 else 0 end     as riskCriticality   : Integer,
+    case when riskTier = 'L' then 'Low' when riskTier = 'M' then 'Medium' when riskTier = 'H' then 'High' end as riskTierText : String(10)
   } actions {
     action submit() returns ChangeRequests;
   };

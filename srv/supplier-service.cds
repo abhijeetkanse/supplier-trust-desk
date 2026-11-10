@@ -8,8 +8,8 @@ service SupplierService @(requires: ['Requester', 'DataSteward', 'Auditor', 'Rul
   @readonly entity Addresses      as projection on mdcr.Addresses;
   @readonly entity ChangeRequests as projection on mdcr.ChangeRequests {
     *,
-    case status.code when 'A' then 3 when 'R' then 1 when 'S' then 2 else 0 end  as statusCriticality : Integer,
-    case riskTier when 'L' then 'Low' when 'M' then 'Medium' when 'H' then 'High' end as riskTierText : String(10)
+    case when status.code = 'A' then 3 when status.code = 'R' then 1 when status.code = 'S' then 2 else 0 end  as statusCriticality : Integer,
+    case when riskTier = 'L' then 'Low' when riskTier = 'M' then 'Medium' when riskTier = 'H' then 'High' end as riskTierText : String(10)
   };
   @readonly entity ChangeItems    as projection on mdcr.ChangeItems;
   @readonly entity RequestStatus  as projection on mdcr.RequestStatus;

@@ -13,7 +13,7 @@ service InsightsService @(requires: ['DataSteward', 'Auditor']) {
         status.code         as status       : String(1),
         status.name         as statusName   : String(255),
         riskTier,
-        case riskTier when 'L' then 'Low' when 'M' then 'Medium' when 'H' then 'High' else 'Not assessed' end as riskTierText : String(15),
+        case when riskTier = 'L' then 'Low' when riskTier = 'M' then 'Medium' when riskTier = 'H' then 'High' else 'Not assessed' end as riskTierText : String(15),
         approvalMode,
         case when approvalMode = 'Auto'     then 'One person (low risk)'
              when approvalMode = 'FourEyes' then 'Four-eyes (steward)'
