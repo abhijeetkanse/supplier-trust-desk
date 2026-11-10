@@ -79,3 +79,9 @@ entity Settings : managed {
       value       : Integer @mandatory;
       description : String(255);
 }
+
+entity OpenLocks {
+  key supplier_ID : UUID;
+  key fieldGroup  : String(20);   // 'address.postal' for postalCode + country, else the field name
+      request_ID  : UUID;
+}

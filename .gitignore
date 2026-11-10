@@ -8,3 +8,4 @@ default-env.json
 .cdsrc-private.json
 .DS_Store
 .deploy/app-router/resources/
+mta-op-*/

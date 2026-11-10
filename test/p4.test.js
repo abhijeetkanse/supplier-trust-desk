@@ -255,13 +255,36 @@ describe('P4 access: each role sees only its own work', () => {
   })
 
   // R4 is your part: once implemented, remove { todo: true }
-  it('T13 R4: only one submitted request per supplier and field (409 on the second submit)', { todo: true }, async () => {
+  it('T13 R4: only one submitted request per supplier and field (409 on the second submit)', async () => {
     const first = await saveRequest('rita', nameChange(MOLENWEG, 'Molenweg Logistics B.V.', 'Rename'))
     assert.equal(first.status, 201)
     assert.equal((await submit('rita', first.data.ID)).status, 200)       // medium: Submitted, lock held
     const second = await saveRequest('raj', nameChange(MOLENWEG, 'Molenweg Logistiek N.V.', 'Rename too'))
     assert.equal(second.status, 201)                                        // saving is allowed
     assert.equal((await submit('raj', second.data.ID)).status, 409)        // submitting is not
+    const again = await axios.get(`${REQ}/ChangeRequests(ID=${second.data.ID},IsActiveEntity=true)`, as('raj'))
+    assert.equal(again.data.status_code, 'N')                               // the refused submit changed nothing
+    assert.equal((await decide('sam', first.data.ID, 'rejectRequest', { note: 'Not needed' })).status, 200)
+    assert.equal((await submit('raj', second.data.ID)).status, 200)
+    assert.equal((await decide('sam', second.data.ID, 'rejectRequest', { note: 'Test done' })).status, 200)
+  })
+
+  it('R4-c two submits at the same moment: exactly one wins', async () => {
+    const a = await saveRequest('rita', { supplier_ID: NORDLICHT, reason: 'Tax A', items: [{ field: 'taxNumber', newValue: 'DE811111112' }] })
+    const b = await saveRequest('raj', { supplier_ID: NORDLICHT, reason: 'Tax B', items: [{ field: 'taxNumber', newValue: 'DE811111113' }] })
+    const [ra, rb] = await Promise.all([submit('rita', a.data.ID), submit('raj', b.data.ID)])
+    assert.deepEqual([ra.status, rb.status].sort(), [200, 409])
+    const winner = ra.status === 200 ? a.data.ID : b.data.ID
+    assert.equal((await decide('sam', winner, 'rejectRequest', { note: 'Test done' })).status, 200)
+  })
+
+  it('R4-e a low-risk fix waits while a submitted request holds the same field group, then applies', async () => {
+    const mid = await saveRequest('rita', { supplier_ID: QUILLMOOR, address_ID: QUILLMOOR_ADDR, reason: 'Moved to Germany', items: [{ field: 'country', newValue: 'DE' }, { field: 'postalCode', newValue: '30111' }] })
+    assert.equal((await submit('rita', mid.data.ID)).data.status_code, 'S')          // medium: lock on postalCode + country
+    const low = await saveRequest('raj', { supplier_ID: QUILLMOOR, address_ID: QUILLMOOR_ADDR, reason: 'Postal code typo', items: [{ field: 'postalCode', newValue: 'LS1 4AQ' }] })
+    assert.equal((await submit('raj', low.data.ID)).status, 409)
+    assert.equal((await decide('sam', mid.data.ID, 'rejectRequest', { note: 'Not moved' })).status, 200)
+    assert.equal((await submit('raj', low.data.ID)).data.status_code, 'A')
   })
 })
 

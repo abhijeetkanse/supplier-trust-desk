@@ -18,7 +18,8 @@ const T = {
   Rules: 'mdcr.PostalCodeRules',
   RiskRules: 'mdcr.RiskRules',
   Settings: 'mdcr.Settings',
-  Holds: 'mdcr.HoldList'
+  Holds: 'mdcr.HoldList',
+  Locks: 'mdcr.OpenLocks'
 }
 
 // ---------------------------------------------------------------
@@ -160,14 +161,17 @@ function registerRequesterRules(srv) {
     const ctx = await loadContext(stored)
     const risk = await assessRisk(ctx.supplier, ctx.items, ID)
 
-    // R4 (TODO – your part, design agreed 8 Nov): one SUBMITTED request per supplier and field group.
-    //   Field groups: postalCode + country = one group; every other field is its own group.
-    //   1. Here, before the tier branch: INSERT one lock row per field group (an entity such as
-    //      OpenLocks, key = supplier + group). A duplicate key -> return req.reject(409, '...').
-    //      The database refuses the duplicate, so two submits at the same moment cannot both pass.
-    //   2. Low branch below: delete this request's locks right after applyItems (same transaction).
-    //   3. registerStewardRules: delete the request's locks in approve and rejectRequest.
-    //   Test T13 (remove { todo: true } when done); P4 guide, section 3, has the checks.
+    // R4: at most one SUBMITTED request per supplier and field group (postalCode + country = one group).
+    //   One lock row per field group in OpenLocks (key = supplier + group). The database refuses a
+    //   duplicate key, so two submits at the same moment cannot both pass. Locks are released when the
+    //   request is applied (low risk, below) or decided (approve / rejectRequest). Tests: T13, R4-c, R4-e.
+    const groups = [...new Set(ctx.items.map(i => fieldGroupOf(i.field)))]
+    try {
+      await INSERT.into(T.Locks).entries(groups.map(fieldGroup => ({ supplier_ID: stored.supplier_ID, fieldGroup, request_ID: ID })))
+    } catch (e) {
+      if (!isDuplicateKey(e)) throw e
+      return req.reject(409, 'Another submitted request already changes this supplier field. Wait until it is decided.')
+    }
 
     if (risk.tier === 'L') {
       const stale = staleItem(ctx)
@@ -179,6 +183,7 @@ function registerRequesterRules(srv) {
       }).where({ ID, status_code: 'N' })
       if (n !== 1) return req.reject(409, 'Request cannot be submitted: its status changed meanwhile.')
       await applyItems(stored, ctx.items)                    // same transaction: all or nothing
+      await DELETE.from(T.Locks).where({ request_ID: ID })
     } else {
       const n = await UPDATE(T.Requests).set({ status_code: 'S', riskTier: risk.tier, riskReason: risk.reason, approvalMode: 'FourEyes' })
         .where({ ID, status_code: 'N' })
@@ -210,6 +215,7 @@ function registerStewardRules(srv) {
       .where({ ID, status_code: 'S' })
     if (n !== 1) return req.reject(409, 'Request cannot be approved: its status changed meanwhile.')
     await applyItems(stored, ctx.items)                      // same transaction: all or nothing
+    await DELETE.from(T.Locks).where({ request_ID: ID })
     return SELECT.one.from(req.subject)
   })
 
@@ -223,6 +229,7 @@ function registerStewardRules(srv) {
       .set({ status_code: 'R', decidedBy: req.user.id, decidedAt: new Date().toISOString(), decisionNote: req.data.note })
       .where({ ID, status_code: 'S' })
     if (n !== 1) return req.reject(409, `Request cannot be rejected: its status is "${stored.status_code}", not "S".`)
+    await DELETE.from(T.Locks).where({ request_ID: ID })
     return SELECT.one.from(req.subject)
   })
 }
@@ -242,6 +249,15 @@ async function mustExist(req, ID) {
 function keyOf(req) {
   const p = req.params?.[0]
   return typeof p === 'object' ? p.ID : p ?? req.data?.ID
+}
+
+function fieldGroupOf(field) {
+  return (field === 'postalCode' || field === 'country') ? 'address.postal' : field
+}
+// SQLite and HANA word a duplicate key differently; CAP may also normalise it to a code.
+function isDuplicateKey(e) {
+  const text = `${e.code} ${e.message} ${e.sqlState ?? ''}`
+  return /UNIQUE_CONSTRAINT_VIOLATION|ENTITY_ALREADY_EXISTS|SQLITE_CONSTRAINT|UNIQUE constraint failed|unique constraint violated|\b301\b|23000/i.test(text)
 }
 
 module.exports = { registerRequesterRules, registerStewardRules, assessRisk, T, ADDRESS_FIELDS, SUPPLIER_FIELDS }
